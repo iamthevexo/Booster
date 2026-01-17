@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kroma | Social Media Optimizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --kroma-dark: #030617;
+            --kroma-accent: #FF8201;
+            --kroma-card: #0c1129;
+            --kroma-text: #ffffff;
+        }
+
+        body {
+            background-color: var(--kroma-dark);
+            color: var(--kroma-text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .kroma-card {
+            background: var(--kroma-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .btn-kroma {
+            background-color: var(--kroma-accent);
+            color: white;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-kroma:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-kroma:active {
+            transform: scale(0.98);
+        }
+
+        .tab-active {
+            border-bottom: 2px solid var(--kroma-accent);
+            color: var(--kroma-accent);
+        }
+
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--kroma-accent);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        input, select, textarea {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 8px;
+            padding: 10px;
+            width: 100%;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--kroma-accent);
+        }
+
+        .hashtag-pill {
+            background: rgba(255, 130, 1, 0.1);
+            border: 1px solid rgba(255, 130, 1, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            margin: 4px;
+            transition: all 0.2s;
+        }
+
+        .hashtag-pill:hover {
+            background: var(--kroma-accent);
+            color: white;
+        }
+
+        /* Optimized for low-end devices */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        .score-glow {
+            text-shadow: 0 0 15px rgba(255, 130, 1, 0.5);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight flex items-center gap-2">
+                    <span class="text-[#FF8201]">KROMA</span> OPTIMIZER
+                </h1>
+                <p class="text-gray-400 text-sm">Maximize reach & engagement</p>
+            </div>
+            <div id="status-indicator" class="text-xs bg-green-900/30 text-green-400 px-3 py-1 rounded-full border border-green-800">
+                Ready for Export
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Sidebar: Inputs -->
+            <div class="lg:col-span-1 space-y-6">
+                <section class="kroma-card p-5">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">Location & Platform</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">Platform</label>
+                            <select id="platform" onchange="calculateOptimization()">
+                                <option value="tiktok">TikTok</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="youtube">YouTube Shorts</option>
+                                <option value="x">X (Twitter)</option>
+                                <option value="linkedin">LinkedIn</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">Country</label>
+                            <select id="country" onchange="updateRegions(); calculateOptimization()">
+                                <option value="global">Global</option>
+                                <option value="usa">United States</option>
+                                <option value="uk">United Kingdom</option>
+                                <option value="nigeria">Nigeria</option>
+                                <option value="india">India</option>
+                            </select>
+                        </div>
+
+                        <div id="region-container" class="hidden">
+                            <label class="text-xs text-gray-400 mb-1 block">Region / State</label>
+                            <select id="region" onchange="calculateOptimization()">
+                                <!-- Dynamic -->
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="kroma-card p-5">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">Post Type</h2>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setPostType('reel', this)" class="type-btn p-3 rounded-lg border border-white/10 text-xs flex flex-col items-center gap-2 hover:bg-white/5 transition active">
+                            <i class="fa-solid fa-film text-orange-400"></i> Short Video
+                        </button>
+                        <button onclick="setPostType('photo', this)" class="type-btn p-3 rounded-lg border border-white/10 text-xs flex flex-col items-center gap-2 hover:bg-white/5 transition">
+                            <i class="fa-solid fa-image text-blue-400"></i> Single Photo
+                        </button>
+                        <button onclick="setPostType('carousel', this)" class="type-btn p-3 rounded-lg border border-white/10 text-xs flex flex-col items-center gap-2 hover:bg-white/5 transition">
+                            <i class="fa-solid fa-images text-purple-400"></i> Carousel
+                        </button>
+                        <button onclick="setPostType('promo', this)" class="type-btn p-3 rounded-lg border border-white/10 text-xs flex flex-col items-center gap-2 hover:bg-white/5 transition">
+                            <i class="fa-solid fa-bullhorn text-green-400"></i> Promotion
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Optimization Meter -->
+                <section class="kroma-card p-6 relative overflow-hidden">
+                    <div class="flex justify-between items-end mb-4">
+                        <div>
+                            <h3 class="text-lg font-medium">Optimization Score</h3>
+                            <p class="text-sm text-gray-400" id="optimization-label">Needs improvement</p>
+                        </div>
+                        <div class="text-4xl font-bold score-glow" id="score-text">0%</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="score-fill" class="progress-fill"></div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mt-6">
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-500 uppercase">Est. Boost</p>
+                            <p class="text-lg font-semibold text-green-400" id="est-boost">+0%</p>
+                        </div>
+                        <div class="text-center border-x border-white/5">
+                            <p class="text-[10px] text-gray-500 uppercase">Reach Potential</p>
+                            <p class="text-lg font-semibold text-blue-400" id="reach-potential">Low</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-500 uppercase">Trend Match</p>
+                            <p class="text-lg font-semibold text-orange-400" id="trend-match">Weak</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Action Tabs -->
+                <div class="kroma-card p-2 flex gap-2">
+                    <button onclick="switchTab('scheduling')" class="flex-1 py-2 text-sm font-medium tab-btn tab-active" id="tab-scheduling">Scheduling</button>
+                    <button onclick="switchTab('hashtags')" class="flex-1 py-2 text-sm font-medium tab-btn" id="tab-hashtags">Hashtags</button>
+                    <button onclick="switchTab('caption')" class="flex-1 py-2 text-sm font-medium tab-btn" id="tab-caption">Captions</button>
+                </div>
+
+                <!-- Tab Content: Scheduling -->
+                <div id="content-scheduling" class="tab-content space-y-4">
+                    <div class="kroma-card p-5">
+                        <h4 class="text-sm font-semibold mb-4 flex items-center gap-2">
+                            <i class="fa-regular fa-clock text-orange-500"></i> Best Posting Windows
+                        </h4>
+                        <div id="time-slots" class="space-y-3">
+                            <!-- Dynamic -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Hashtags -->
+                <div id="content-hashtags" class="tab-content hidden space-y-4">
+                    <div class="kroma-card p-5">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-sm font-semibold">Recommended Hashtags</h4>
+                            <button onclick="copyAllHashtags()" class="text-[10px] bg-white/5 hover:bg-white/10 px-2 py-1 rounded transition">Copy All</button>
+                        </div>
+                        <div id="hashtag-cloud" class="min-h-[100px]">
+                            <!-- Dynamic -->
+                        </div>
+                    </div>
+                    <div class="kroma-card p-5">
+                        <h4 class="text-sm font-semibold mb-2">Visual Theme Suggestion</h4>
+                        <p id="theme-tip" class="text-sm text-gray-400 italic">"Use high-contrast vibrant tones to match current trending aesthetics."</p>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Caption -->
+                <div id="content-caption" class="tab-content hidden space-y-4">
+                    <div class="kroma-card p-5">
+                        <textarea id="caption-box" rows="4" placeholder="Draft your caption here..." oninput="calculateOptimization()"></textarea>
+                        <div class="flex justify-between mt-3">
+                            <span class="text-xs text-gray-500" id="char-count">0 characters</span>
+                            <button onclick="copyCaption()" class="btn-kroma px-4 py-2 rounded-lg text-xs">Copy Caption</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export -->
+                <div class="flex gap-4">
+                    <button onclick="exportToText()" class="flex-1 bg-white/5 border border-white/10 py-3 rounded-xl text-sm font-medium hover:bg-white/10 transition">
+                        <i class="fa-solid fa-download mr-2"></i> Export Plan (.txt)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-white text-black px-6 py-3 rounded-xl shadow-2xl translate-y-24 transition-transform duration-300 pointer-events-none z-50 font-medium">
+        Copied to clipboard!
+    </div>
+
+    <script>
+        // Database of optimization data
+        const DATA = {
+            platforms: {
+                tiktok: { boost: 1.2, reach: 'Extreme', hashtags: ['foryou', 'trending', 'viral', 'fyp', 'creative', 'design', 'kroma'] },
+                instagram: { boost: 0.8, reach: 'High', hashtags: ['explorepage', 'reels', 'designinspiration', 'creative', 'aesthetic', 'instadaily'] },
+                youtube: { boost: 1.5, reach: 'High', hashtags: ['shorts', 'trending', 'howtodraw', 'speedart', 'vlog', 'techtips'] },
+                x: { boost: 0.6, reach: 'Medium', hashtags: ['breaking', 'designthinking', 'techtok', 'kromaapp', 'art'] },
+                linkedin: { boost: 0.4, reach: 'Stable', hashtags: ['professional', 'networking', 'creativeleadership', 'uiux', 'business'] }
+            },
+            regions: {
+                usa: ['California', 'New York', 'Texas', 'Florida'],
+                nigeria: ['Lagos', 'Abuja', 'Kano', 'Rivers'],
+                uk: ['London', 'Manchester', 'Birmingham', 'Scotland'],
+                india: ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad']
+            },
+            times: {
+                morning: { label: 'Peak Morning', range: '07:00 - 09:30', score: 85 },
+                afternoon: { label: 'Lunch Break', range: '12:00 - 13:45', score: 70 },
+                evening: { label: 'Prime Time', range: '19:00 - 21:30', score: 98 },
+                night: { label: 'Late Night Scroll', range: '23:00 - 01:00', score: 60 }
+            }
+        };
+
+        let currentPostType = 'reel';
+
+        function init() {
+            loadCache();
+            updateRegions();
+            calculateOptimization();
+            renderHashtags();
+            renderTimes();
+        }
+
+        // Cache System
+        function saveCache() {
+            const settings = {
+                platform: document.getElementById('platform').value,
+                country: document.getElementById('country').value,
+                type: currentPostType
+            };
+            localStorage.setItem('kroma_optimizer_cache', JSON.stringify(settings));
+        }
+
+        function loadCache() {
+            const cached = localStorage.getItem('kroma_optimizer_cache');
+            if (cached) {
+                const data = JSON.parse(cached);
+                document.getElementById('platform').value = data.platform || 'tiktok';
+                document.getElementById('country').value = data.country || 'global';
+                currentPostType = data.type || 'reel';
+                
+                // Highlight active button
+                document.querySelectorAll('.type-btn').forEach(btn => {
+                    if (btn.innerText.toLowerCase().includes(currentPostType)) {
+                        btn.classList.add('bg-white/10');
+                    }
+                });
+            }
+        }
+
+        function updateRegions() {
+            const country = document.getElementById('country').value;
+            const container = document.getElementById('region-container');
+            const select = document.getElementById('region');
+            
+            if (DATA.regions[country]) {
+                container.classList.remove('hidden');
+                select.innerHTML = DATA.regions[country].map(r => `<option value="${r.toLowerCase()}">${r}</option>`).join('');
+            } else {
+                container.classList.add('hidden');
+            }
+            saveCache();
+        }
+
+        function setPostType(type, el) {
+            currentPostType = type;
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.classList.remove('border-orange-500', 'bg-white/10');
+            });
+            el.classList.add('border-orange-500', 'bg-white/10');
+            
+            calculateOptimization();
+            renderHashtags();
+            saveCache();
+        }
+
+        function calculateOptimization() {
+            const platformKey = document.getElementById('platform').value;
+            const caption = document.getElementById('caption-box').value;
+            const platformData = DATA.platforms[platformKey];
+            
+            let score = 20; // Base score
+
+            // Platform factor
+            if (platformKey === 'tiktok' || platformKey === 'youtube') score += 15;
+            
+            // Content factor
+            if (currentPostType === 'reel') score += 20;
+            if (currentPostType === 'carousel') score += 15;
+
+            // Caption factor
+            if (caption.length > 10) score += 15;
+            if (caption.includes('#')) score += 10;
+            if (caption.length > 200) score -= 10; // Penalty for over-long captions
+
+            // Final clamping
+            score = Math.min(Math.max(score, 10), 99);
+
+            // Update UI
+            document.getElementById('score-text').innerText = `${score}%`;
+            document.getElementById('score-fill').style.width = `${score}%`;
+            document.getElementById('char-count').innerText = `${caption.length} characters`;
+
+            // Status Label
+            const label = document.getElementById('optimization-label');
+            if (score < 40) { label.innerText = "Poor optimization - Add hashtags"; label.style.color = "#ff4444"; }
+            else if (score < 75) { label.innerText = "Good - Ready for Prime Time"; label.style.color = "#ffbb33"; }
+            else { label.innerText = "Excellent - High Viral Potential"; label.style.color = "#00C851"; }
+
+            // Indicators
+            document.getElementById('est-boost').innerText = `+${Math.floor(score * 1.5)}%`;
+            document.getElementById('reach-potential').innerText = platformData.reach;
+            document.getElementById('trend-match').innerText = score > 80 ? 'Perfect' : (score > 50 ? 'Strong' : 'Weak');
+
+            renderTimes();
+        }
+
+        function renderHashtags() {
+            const platform = document.getElementById('platform').value;
+            const baseTags = DATA.platforms[platform].hashtags;
+            const container = document.getElementById('hashtag-cloud');
+            
+            container.innerHTML = baseTags.map(tag => `
+                <span class="hashtag-pill" onclick="copyTag('#${tag}')">
+                    #${tag}
+                </span>
+            `).join('');
+        }
+
+        function renderTimes() {
+            const container = document.getElementById('time-slots');
+            const sortedTimes = Object.values(DATA.times).sort((a,b) => b.score - a.score);
+            
+            container.innerHTML = sortedTimes.map((t, idx) => `
+                <div class="flex items-center justify-between p-3 rounded-lg ${idx === 0 ? 'bg-orange-500/10 border border-orange-500/20' : 'bg-white/5'}">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-tighter ${idx === 0 ? 'text-orange-400' : 'text-gray-400'}">${t.label}</p>
+                        <p class="text-sm font-semibold">${t.range}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-gray-500 uppercase">Efficiency</p>
+                        <p class="text-sm font-bold text-white">${t.score}%</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+            
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('tab-active');
+        }
+
+        // Copy Utility
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg || "Copied to clipboard!";
+            toast.classList.remove('translate-y-24');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24');
+            }, 2000);
+        }
+
+        function copyTag(tag) {
+            const el = document.createElement('textarea');
+            el.value = tag;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast(`Copied ${tag}`);
+        }
+
+        function copyCaption() {
+            const text = document.getElementById('caption-box').value;
+            if (!text) return;
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast("Caption copied!");
+        }
+
+        function copyAllHashtags() {
+            const platform = document.getElementById('platform').value;
+            const tags = DATA.platforms[platform].hashtags.map(t => '#' + t).join(' ');
+            const el = document.createElement('textarea');
+            el.value = tags;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast("All hashtags copied!");
+        }
+
+        function exportToText() {
+            const platform = document.getElementById('platform').value;
+            const score = document.getElementById('score-text').innerText;
+            const caption = document.getElementById('caption-box').value;
+            const tags = DATA.platforms[platform].hashtags.map(t => '#' + t).join(' ');
+            
+            const content = `KROMA OPTIMIZER REPORT\n--------------------\nPlatform: ${platform}\nOptimization Score: ${score}\n\nSUGGESTED HASHTAGS:\n${tags}\n\nCAPTION DRAFT:\n${caption || '[Empty]'}\n\nGenerated by Kroma App.`;
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kroma_post_plan_${platform}.txt`;
+            a.click();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
